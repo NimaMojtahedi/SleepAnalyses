@@ -3,8 +3,8 @@ Descriptive analyses of SOMNOgraph signals in different sleep stages
 
 
 The folder contains 2 files,
-####1. ETL.py
-####2. Analysis notebook
+#### 1. ETL.py
+#### 2. Analysis notebook
 
 ### ETL
 
