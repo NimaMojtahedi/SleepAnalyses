@@ -1168,7 +1168,7 @@ class Triplet:
 
     def __init__(self, data, hypno, data_artifact, hypno_artifact, sf, pattern, normalize, min_window = 0, max_window = np.inf):
 
-
+		# Hint: Normalized Triplet is not implemented and will be next step
         # if pattern is empty or not
         if len(pattern['names']) == 0:
             raise Exception('no pattern is given')
