@@ -2054,7 +2054,7 @@ class Triplet:
 
 
 def select_subpopulation(avg_data, type_, percentage_):
-    # this function is finding index of of sub-population in a given state
+    # this function is finding index of of sub-population in a given state considering all dataset
     # user has to give average data of amplitude or frequency for any interested state and this function return just index of cells
 
     # avg_data --> average amplitude/ average frequency for a given state
