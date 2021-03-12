@@ -16,6 +16,7 @@ import warnings
 
 
 class ETL:
+	# class of loading data and preparing as array
     def __init__(self, sf, ending, unit_length):
         self.sf = sf # sampling frequency
         self.ending = ending
