@@ -1,6 +1,8 @@
 import numpy as np
 from Analyses_ import findseq, ETL
 import json
+from tqdm import tqdm
+import pdb
 
 
 def create_dict(mouseName, unitNr, data, hypnoState, sf, apply_artifact, removeCell, start, end):
@@ -389,3 +391,105 @@ def spi_inOut_diff(x, y):
     diff = np.where(diff == 0, np.nan, diff)
     
     return diff
+
+
+def zscore_calculator(dataBase, mouse_name_list, variable = "frequency", divided_data = False):
+    """
+    This function calculates zscore per cell in a given mouse. 
+    dataBase --> Full data base to add zscore key to each dictionary
+    mouse_name_list --> list of all mouse names avaible in database
+    variable --> must be one of "frequency" or "amplitude"
+    """
+
+    if variable == "frequency" and not divided_data:
+        # zscore normalization of avg firing rate. Normalization is applied per cell for each individual mouse separately
+        mouse_zscore_info = []
+        for mouse in tqdm(mouse_name_list):
+            mouse_avg = []
+            for dict in dataBase:
+                if dict["mouseName"] == mouse:
+                    mouse_avg.append(dict["avg_firing_perSecond"])
+            mouse_zscore_info.append({"mouseName":mouse, "nanmean": np.nanmean(np.stack(mouse_avg), axis = 0), "nanstd": np.nanstd(np.stack(mouse_avg), axis = 0)})
+            
+
+        # update database
+        for dict in tqdm(dataBase):
+            for info in mouse_zscore_info:
+                if dict["mouseName"] == info["mouseName"]:
+                    dict.update({"avg_firing_perSecond_zscore": (dict["avg_firing_perSecond"] - info["nanmean"]) / info["nanstd"]})
+        
+        return dataBase
+
+    elif variable == "frequency" and divided_data:
+        # zscore normalization of avg firing rate. Normalization is applied per cell for each individual mouse separately
+        mouse_zscore_info = []
+        for mouse in tqdm(mouse_name_list):
+            mouse_avg = []
+            for dict in dataBase:
+                if dict["mouseName"] == mouse:
+                    mouse_avg.append(dict["div_avg_firing_perSecond"])
+            mouse_zscore_info.append({"mouseName":mouse, "nanmean": np.nanmean(np.vstack(mouse_avg), axis = 0), "nanstd": np.nanstd(np.vstack(mouse_avg), axis = 0)})
+            
+
+        # update database
+        for dict in tqdm(dataBase):
+            for info in mouse_zscore_info:
+                if dict["mouseName"] == info["mouseName"]:
+                    dict.update({"div_avg_firing_perSecond_zscore": [(el - info["nanmean"]) / info["nanstd"] for el in dict["div_avg_firing_perSecond"]]})
+
+        return dataBase
+    
+    elif variable == "amplitude" and not divided_data:
+        # zscore normalization of avg firing rate. Normalization is applied per cell for each individual mouse separately
+        mouse_zscore_info = []
+        for mouse in tqdm(mouse_name_list):
+            mouse_avg = []
+            for dict in dataBase:
+                if dict["mouseName"] == mouse:
+                    mouse_avg.append(dict["avg_amplitude"])
+            mouse_zscore_info.append({"mouseName":mouse, "nanmean": np.nanmean(np.stack(mouse_avg), axis = 0), "nanstd": np.nanstd(np.stack(mouse_avg), axis = 0)})
+            
+
+        # update database
+        for dict in tqdm(dataBase):
+            for info in mouse_zscore_info:
+                if dict["mouseName"] == info["mouseName"]:
+                    dict.update({"avg_amplitude_zscore": (dict["avg_amplitude"] - info["nanmean"]) / info["nanstd"]})
+
+        return dataBase
+
+    elif variable == "amplitude" and divided_data:
+        mouse_zscore_info = []
+        for mouse in tqdm(mouse_name_list):
+            mouse_avg = []
+            for dict in dataBase:
+                if dict["mouseName"] == mouse:
+                    mouse_avg.append(dict["div_avg_amplitude"])
+            mouse_zscore_info.append({"mouseName":mouse, "nanmean": np.nanmean(np.vstack(mouse_avg), axis = 0), "nanstd": np.nanstd(np.vstack(mouse_avg), axis = 0)})
+            
+
+        # update database
+        for dict in tqdm(dataBase):
+            for info in mouse_zscore_info:
+                if dict["mouseName"] == info["mouseName"]:
+                    dict.update({"div_avg_amplitude_zscore": [(el - info["nanmean"]) / info["nanstd"] for el in dict["div_avg_amplitude"]]})
+
+        return dataBase
+
+    else:
+        raise Exception("Input variable might be wrong!")
+
+
+def raster_data(dataBase, mouse_name):
+    """
+    This function takes full data base and mouse name then returns concatinated events for a given mouse (raster data)
+    dataBase --> full data base
+    mouse_name --> name of the mouse from data base
+    """
+
+    rasters = []
+    for dict in dataBase:
+        if dict["mouseName"] == mouse_name:
+            rasters.append(np.where(dict["data"]>0, 1, 0))
+    
+    return np.vstack(rasters)
