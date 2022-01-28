@@ -488,8 +488,10 @@ def raster_data(dataBase, mouse_name):
     """
 
     rasters = []
+    hypno = []
     for dict in dataBase:
         if dict["mouseName"] == mouse_name:
             rasters.append(np.where(dict["data"]>0, 1, 0))
+            hypno.append(np.zeros((dict["data"].shape[0])) + dict["hypnoState"])
     
-    return np.vstack(rasters)
+    return np.vstack(rasters), np.hstack(hypno)
