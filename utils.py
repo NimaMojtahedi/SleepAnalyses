@@ -241,7 +241,7 @@ def div_avg_amplitude(data, n =3):
     avg = [avg_amplitude(data=data[spaces[i]:spaces[i+1],:]) for i in range(n)]
     return avg
 
-def top_least(data, prc = 10, top = True):
+def top_least(data, prc = 10, top = True, positive = False):
     
     """
     This function return indices and values of top or least x% of given data
@@ -250,6 +250,10 @@ def top_least(data, prc = 10, top = True):
     prc: percentage
     top: if True returns top if false returns least
     """
+    # check if positive is True and top is false
+    if not top and positive:
+        raise Exception("You can not have positivity force on least active cells (specially in spindle active/non-active caases)")
+
     data = np.array(data)
     
     indx = np.argsort(data)
@@ -259,10 +263,22 @@ def top_least(data, prc = 10, top = True):
     selc = max(1, int(len(data) * (prc/100)))
     
     if top:
-        return indx[notNans][-selc:], data[indx[notNans]][-selc:]
+        out_ind, out_data = indx[notNans][-selc:], data[indx[notNans]][-selc:]
     
     if not top:
-        return indx[notNans][:selc], data[indx[notNans]][:selc]
+        out_ind, out_data = indx[notNans][:selc], data[indx[notNans]][:selc]
+
+    if positive:
+        positive_indices = np.where(out_data>0)[0]
+
+        #check if there is no positive value return nan
+        if not positive_indices.size:
+            return np.nan, np.nan
+        else:
+            return out_ind[positive_indices], out_data[positive_indices]
+    return out_ind, out_data
+
+
     
     
     
